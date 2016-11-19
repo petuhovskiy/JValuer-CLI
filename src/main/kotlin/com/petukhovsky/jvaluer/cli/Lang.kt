@@ -36,7 +36,7 @@ data class Lang(val name: String,
         }
 }
 
-fun Array<Lang>.toLanguages() : Languages {
+fun List<Lang>.toLanguages() : Languages {
     val builder = LanguagesBuilder()
     for (it in this) {
         builder.addLanguage(it.toLanguage(), it.exts, arrayOf(it.id))
@@ -61,7 +61,7 @@ fun readCompiler(nextLine: () -> String = {readLine()!!}): Map<String, Any>? {
         print("Compiler type[Clone/runnable]: ")
         val line = nextLine()
         if (line.isEmpty()) return null
-        if (line.equals("clone", true)) return emptyMap()
+        if (line.equals("clone", true)) return mapOf(Pair("type", "clone"))
         if (line.equals("runnable", true)) break
         println("Unknown compiler type. Type 'clone' or 'runnable'")
     }
@@ -71,10 +71,9 @@ fun readCompiler(nextLine: () -> String = {readLine()!!}): Map<String, Any>? {
     val pattern = nextLine()
     print("Compiler timeout in seconds: ")
     val timeout = nextLine()
-    val result = mutableMapOf(Pair("exe", executable), Pair("pattern", pattern))
+    val result = mutableMapOf<String, Any>(Pair("exe", executable), Pair("pattern", pattern), Pair("type", "runnable"))
     try {
-        Integer.parseInt(timeout)
-        result.put("timeout", timeout)
+        result.put("timeout", Integer.parseInt(timeout))
     } catch (e: NumberFormatException) {}
     return result
 }
@@ -84,7 +83,7 @@ fun readInvoker(nextLine: () -> String = {readLine()!!}): Map<String, Any>? {
         print("Invoker type[Default/custom]: ")
         val line = nextLine()
         if (line.isEmpty()) return null
-        if (line.equals("default", true)) return emptyMap()
+        if (line.equals("default", true)) return mapOf(Pair("type", "default"))
         if (line.equals("custom", true)) break
         println("Unknown invoker type. Type 'default' or 'custom'")
     }
@@ -92,5 +91,5 @@ fun readInvoker(nextLine: () -> String = {readLine()!!}): Map<String, Any>? {
     val executable = nextLine()
     print("Invoker pattern: ")
     val pattern = nextLine()
-    return mapOf(Pair("exe", executable), Pair("pattern", pattern))
+    return mapOf(Pair("exe", executable), Pair("pattern", pattern), Pair("type", "custom"))
 }

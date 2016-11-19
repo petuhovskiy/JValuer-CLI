@@ -1,11 +1,8 @@
 package com.petukhovsky.jvaluer.cli.cmd
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.petukhovsky.jvaluer.cli.Lang
+import com.petukhovsky.jvaluer.cli.*
 import com.petukhovsky.jvaluer.cli.db.dbObject
-import com.petukhovsky.jvaluer.cli.objectMapper
-import com.petukhovsky.jvaluer.cli.readLang
-import com.petukhovsky.jvaluer.cli.readYN
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -32,12 +29,45 @@ object Init : Command {
         }
         val langs = mutableListOf<Lang>()
         println("Hint: Type ~back if you made a mistake.")
-        while (true) {
-            print("Want to add ${if (langs.isEmpty()) "language" else "more languages"}? [Y/n] ")
-            if (!(readYN() ?: continue)) break
-            try {
-                langs.add(readLang { readLineBack() })
-            } catch (e: SkipException) {continue}
+        loop0@ while (true) {
+            while (true) {
+                print("Do you want to add ${if (langs.isEmpty()) "new language" else "more languages"}? [Y/n] ")
+                if (!(readYN() ?: continue)) break
+                try {
+                    val lang = readLang { readLineBack() }
+                    lang.toLanguage()
+                    langs.add(lang)
+                } catch (e: SkipException) {
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            var wasError = false
+            while (true) {
+                try {
+                    langs.toLanguages()
+                    if (!wasError) break@loop0
+                    else break
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                wasError = true
+                println("There is a error in languages. Choose one to delete")
+                for (i in langs.indices) {
+                    println("[$i] ${objectMapper.writeValueAsString(langs[i])}")
+                }
+                while (true) {
+                    try {
+                        print("Enter number to delete: ")
+                        val num = readLine()!!.toInt()
+                        if (num !in langs.indices) continue
+                        langs.removeAt(num)
+                        break
+                    } catch (e: NumberFormatException) {
+                        continue;
+                    }
+                }
+            }
         }
         dbObject<Array<Lang>>("lang").save(langs.toTypedArray())
         println("Store successfully initialized")
