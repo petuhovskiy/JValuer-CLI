@@ -42,6 +42,9 @@ data class Lang(val name: String,
             && compiler == other.compiler
             && invoker == other.invoker
 
+    override fun hashCode(): Int {
+        return Objects.hash(name, id, exts, compiler, invoker)
+    }
 }
 
 fun List<Lang>.toLanguages() : Languages {
