@@ -4,6 +4,7 @@ import com.petukhovsky.jvaluer.cli.objectMapper
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
 
 private val prefix = ".jv/db/"
 
@@ -27,7 +28,7 @@ class DbObject<T>(path: String, val c: Class<T>) {
     fun save(value: T) {
         Files.createDirectories(json.parent)
         if (Files.exists(json)) Files.move(json, bak, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-        objectMapper.writeValue(json.toFile(), value)
+        Files.newOutputStream(json).use { objectMapper.writeValue(it, value) }
         Files.deleteIfExists(bak)
     }
 }

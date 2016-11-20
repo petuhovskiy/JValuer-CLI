@@ -2,9 +2,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.petukhovsky.jvaluer.cli.Lang
 import com.petukhovsky.jvaluer.cli.objectMapper
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
-open class LangTest {
+class LangTest {
 
     @Test
     fun test() {
@@ -25,5 +26,9 @@ open class LangTest {
         }"""
         val lang = objectMapper.readValue<Lang>(string)
         println(lang)
+        val string2 = objectMapper.writeValueAsString(lang)
+        println(string2)
+        val lang2 = objectMapper.readValue<Lang>(string2)
+        assertEquals(lang, lang2)
     }
 }

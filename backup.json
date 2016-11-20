@@ -1,3 +1,3 @@
 {
-  "lang": [{"name":"GNU C++11","id":"cpp","exts":["cpp","h"],"invoker":null}]
+  "lang": [{"name":"GNU C++11","id":"cpp","exts":["cpp","h"],"compiler":{"exe":"g++","pattern":"{defines} -O2 -fno-stack-limit -x c++ -std=c++11 {source} -o {output}","type":"runnable","timeout":60},"invoker":null}]
 }

@@ -17,9 +17,9 @@ data class Lang(val name: String,
                 val exts: Array<String>,
                 val compiler: Map<String, Any>?,
                 val invoker: Map<String, Any>?) {
-    fun toLanguage(): Language = Language(name, getCompiler(), getInvoker())
+    fun toLanguage(): Language = Language(name, createCompiler(), createInvoker())
 
-    private fun getCompiler(): Compiler = if (compiler == null) CloneCompiler() else
+    private fun createCompiler(): Compiler = if (compiler == null) CloneCompiler() else
         when (compiler["type"]) {
             "clone" -> CloneCompiler()
             "runnable" ->
@@ -28,12 +28,20 @@ data class Lang(val name: String,
             else -> throw RuntimeException("unknown compiler type")
         }
 
-    private fun getInvoker(): Invoker = if (invoker == null) DefaultInvoker() else
+    private fun createInvoker(): Invoker = if (invoker == null) DefaultInvoker() else
         when (invoker["type"]) {
             "default" -> DefaultInvoker()
             "custom" -> CustomInvoker(invoker["exe"] as String, invoker["pattern"] as String)
             else -> throw RuntimeException("unknown invoker type")
         }
+
+    override fun equals(other: Any?): Boolean = other is Lang
+            && name == other.name
+            && id == other.id
+            && Arrays.equals(exts, other.exts)
+            && compiler == other.compiler
+            && invoker == other.invoker
+
 }
 
 fun List<Lang>.toLanguages() : Languages {
