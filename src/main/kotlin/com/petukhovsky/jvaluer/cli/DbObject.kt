@@ -6,12 +6,12 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 
-private val prefix = ".jv/db/"
+private val prefix = "db/"
 
 class DbObject<T>(path: String, val c: Class<T>) {
 
-    val bak = Paths.get(prefix, "$path.bak")
-    val json = Paths.get(prefix, "$path.json")
+    val bak = configDir.resolve("$path.bak")
+    val json = configDir.resolve("$path.json")
 
     fun exists() = Files.exists(bak) || Files.exists(json)
 

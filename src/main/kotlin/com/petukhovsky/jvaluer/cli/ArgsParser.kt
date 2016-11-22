@@ -58,7 +58,7 @@ class PrettyArgs(val map: Map<String, ParserParam>) {
     }
 
     fun getOne(key: String): String? {
-        if (key in map) return map[key]!!.list[0] else return null
+        if (key in map && map[key]!!.list.isNotEmpty()) return map[key]!!.list[0] else return null
     }
 
     fun getAll(key: String): List<String> {

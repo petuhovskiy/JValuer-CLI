@@ -47,7 +47,7 @@ data class Lang(val name: String,
     }
 }
 
-fun List<Lang>.toLanguages() : Languages {
+fun Array<Lang>.toLanguages() : Languages {
     val builder = LanguagesBuilder()
     for (it in this) {
         builder.addLanguage(it.toLanguage(), it.exts, arrayOf(it.id))

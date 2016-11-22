@@ -28,7 +28,7 @@ object Init : Command {
             val backup = Files.newInputStream(path).use {
                 objectMapper.readValue<ConfigBackup>(it)
             }
-            jValuerConfig.save(backup.jValuer)
+            jValuerConfig.save(backup.jvaluer)
             langConfig.save(backup.lang)
             println("Success")
             return
@@ -51,7 +51,7 @@ object Init : Command {
             var wasError = false
             while (true) {
                 try {
-                    langs.toLanguages()
+                    langs.toTypedArray().toLanguages()
                     if (!wasError) break@loop0
                     else break
                 } catch (e: Exception) {
