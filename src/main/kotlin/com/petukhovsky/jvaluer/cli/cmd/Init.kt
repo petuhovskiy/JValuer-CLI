@@ -2,12 +2,16 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.petukhovsky.jvaluer.cli.*
-import com.petukhovsky.jvaluer.cli.db.dbObject
 import java.nio.file.Files
 import java.nio.file.Paths
 
 object Init : Command {
     override fun command(args: Array<String>) {
+        val cmd = parseArgs(args, paramOf("--file"))
+        if (cmd.list.isNotEmpty()) {
+            printHelp()
+            return
+        }
         val base = Paths.get(".jv")
         if (Files.exists(base)) {
             while (true) {
@@ -15,17 +19,19 @@ object Init : Command {
                 if (readYN() ?: continue) break else return
             }
         }
-        for (i in args.indices.filter { it > 0 }) {
-            val arg = args[i]
-            if (!arg.startsWith("--file=")) {
-                println("Unknown argument: " + arg)
-                return printHelp()
+        if (cmd.has("--file")) {
+            val path = Paths.get(cmd.get("--file"))
+            if (!Files.exists(path)) {
+                println("File ${cmd.get("--file")} not found")
+                return
             }
-            val file = arg.removePrefix("--file=")
-            val path = Paths.get(file)
-            if (!Files.exists(path)) return println("File $file doesn't exist")
-            val backup = objectMapper.readValue<ConfigBackup>(path.toFile())
-            throw UnsupportedOperationException("not implemented") //TODO
+            val backup = Files.newInputStream(path).use {
+                objectMapper.readValue<ConfigBackup>(it)
+            }
+            jValuerConfig.save(backup.jValuer)
+            langConfig.save(backup.lang)
+            println("Success")
+            return
         }
         val langs = mutableListOf<Lang>()
         println("Hint: Type ~back if you made a mistake.")
@@ -52,7 +58,7 @@ object Init : Command {
                     e.printStackTrace()
                 }
                 wasError = true
-                println("There is a error in languages. Choose one to delete")
+                println("There is an error in languages. Choose one to delete")
                 for (i in langs.indices) {
                     println("[$i] ${objectMapper.writeValueAsString(langs[i])}")
                 }
@@ -69,8 +75,16 @@ object Init : Command {
                 }
             }
         }
-        dbObject<Array<Lang>>("lang").save(langs.toTypedArray())
+        langConfig.save(langs.toTypedArray())
+        jValuerConfig.save(JValuerConfig(true))
         println("Store successfully initialized")
+    }
+
+    override fun printHelp() {
+        println("Usage:")
+        println("jv init [--file <file>]")
+        println()
+        println("Init config. If the file is specified, then config will be imported from it.")
     }
 }
 
@@ -81,5 +95,3 @@ fun readLineBack(): String{
 }
 
 class SkipException : Exception()
-
-data class ConfigBackup(val lang: Array<Lang>)

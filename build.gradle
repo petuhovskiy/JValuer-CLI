@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-	compile 'com.github.petuhovskiy:JValuer:v1.0.10'
+	compile 'com.github.petuhovskiy:JValuer:v1.1'
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.5"
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect

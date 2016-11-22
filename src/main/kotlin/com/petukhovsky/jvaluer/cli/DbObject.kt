@@ -1,4 +1,4 @@
-package com.petukhovsky.jvaluer.cli.db
+package com.petukhovsky.jvaluer.cli
 
 import com.petukhovsky.jvaluer.cli.objectMapper
 import java.nio.file.Files
