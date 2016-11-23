@@ -26,8 +26,31 @@ fun RunnerBuilder.buildSafe(path: Path, lang: Language) = this.buildSafe(path, l
 fun RunnerBuilder.buildSafe(path: Path, invoker: Invoker) = this.buildSafe(Executable(path, invoker))!!
 
 fun compileSrc(src: Source, liveProgress: Boolean = true, jvaluer: JValuer = jValuer): MyExecutable {
-    println("Compiling...")
-    val result = jvaluer.compile(src) //TODO: live progress, watch thread
+    val result: CompilationResult
+    if (!liveProgress) {
+        println("Compiling...")
+        result = jvaluer.compile(src)
+    } else {
+        result = object : LiveProcess<CompilationResult>() {
+            override fun update() {
+                val passed = (ended ?: now()) - started
+                val seconds = passed / 1000
+                val ms = passed % 1000
+                print("\rCompil")
+                if (ended == null) {
+                    print("ing")
+                    for (i in 0..2) print(if (i < seconds % 3) '.' else ' ')
+                } else {
+                    print("ed!   ")
+                }
+                print("  ")
+                print("[${seconds}s ${ms}ms]")
+            }
+
+            override fun run(): CompilationResult = jvaluer.compile(src)
+        }.execute()
+        println()
+    }
     return MyExecutable(result.exe, src.language.invoker(), result)
 }
 
