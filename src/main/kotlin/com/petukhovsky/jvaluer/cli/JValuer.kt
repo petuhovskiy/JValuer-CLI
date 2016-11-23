@@ -39,12 +39,12 @@ fun compileSrc(src: Source, liveProgress: Boolean = true, jvaluer: JValuer = jVa
                 print("\rCompil")
                 if (ended == null) {
                     print("ing")
-                    for (i in 0..2) print(if (i < seconds % 3) '.' else ' ')
+                    for (i in 0..2) print(if (i < seconds % 4) '.' else ' ')
                 } else {
                     print("ed!   ")
                 }
                 print("  ")
-                print("[${seconds}s ${ms}ms]")
+                print("[${seconds}s ${String.format("%03d", ms)}ms]")
             }
 
             override fun run(): CompilationResult = jvaluer.compile(src)
