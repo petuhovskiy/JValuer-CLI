@@ -30,7 +30,7 @@ object Run : Command {
             println(objectMapper.writeValueAsString(script))
             return
         }
-        executeRunScript(script)
+        script.execute()
     }
 
     override fun printHelp() {
@@ -58,7 +58,7 @@ object RunScriptCmd : Command {
         if (args.size != 2) return printHelp()
         val file = Paths.get(args[1])
         val script = Files.newInputStream(file).use { objectMapper.readValue<RunScript>(it) }
-        executeRunScript(script)
+        script.execute()
     }
 
     override fun printHelp() {
@@ -76,18 +76,6 @@ fun parseColon(s: String?): Pair<String, String>? {
     return Pair(s.substring(0..(index - 1)), s.substring(index + 1))
 }
 
-data class RunScript (
-        val file: String,
-        val type: FileType,
-        val lang: String?,
-        val tl: String?,
-        val ml: String?,
-        val `in`: MyPipe,
-        val out: MyPipe
-) {
-    fun createLimits(): RunLimits = RunLimits.of(tl, ml)
-}
-
 enum class FileType {
     src,
     exe,
@@ -98,6 +86,74 @@ data class MyPipe(
         val exe: String,
         val file: String?
 )
+
+data class RunScript(
+        val file: String,
+        val type: FileType,
+        val lang: String?,
+        val tl: String?,
+        val ml: String?,
+        val `in`: MyPipe,
+        val out: MyPipe
+) : Script {
+
+    fun createLimits(): RunLimits = RunLimits.of(tl, ml)
+
+    override fun execute() {
+        val file = Paths.get(this.file)
+
+        val type: FileType
+        val lang: Language?
+        when (this.type) {
+            FileType.auto -> {
+                lang = jValuer.languages.findByName(this.lang) ?: jValuer.languages.findByPath(file)
+                if (lang != null) {
+                    println("Detected language: ${lang.name()}")
+                    type = FileType.src
+                } else {
+                    println("Language not found. Assuming file is exe")
+                    type = FileType.exe
+                }
+            }
+            FileType.exe -> {
+                lang = jValuer.languages.findByName(this.lang)
+                type = FileType.exe
+            }
+            FileType.src -> {
+                type = FileType.src
+                lang = jValuer.languages.findByName(this.lang)
+                if (lang == null) {
+                    println("Language ${this.lang} not found")
+                    println("Available languages: " + langConfig.get()!!.map(Lang::id).toString())
+                    return
+                }
+            }
+        }
+
+        assert(type != FileType.auto) { "Wat, report to GitHub." }
+
+        val exe: MyExecutable
+        if (type == FileType.src) {
+            exe = compileSrc(Source(file, lang))
+            exe.printLog()
+        } else {
+            exe = MyExecutable(file, DefaultInvoker(), null)
+        }
+
+        val limits = this.createLimits()
+
+        val runner = createRunnerBuilder()
+                .limits(limits).inOut(RunInOut(this.`in`.exe, this.out.exe)).buildSafe(exe)
+
+        val result = runner.run(PathData(file.resolveSibling(this.`in`.file))) //TODO: live action
+        if (this.out.file == "stdout") { //TODO
+            println(result.out.string)
+        } else {
+            Files.copy(result.out.path, file.resolveSibling(this.out.file), StandardCopyOption.REPLACE_EXISTING)
+        }
+        println(result.run)
+    }
+}
 
 fun buildRunScript(cmd: PrettyArgs): RunScript? {
     if (cmd.list.size != 1) {
@@ -124,59 +180,4 @@ fun buildRunScript(cmd: PrettyArgs): RunScript? {
     val `in` = if (i == null) MyPipe("stdin", "input.txt") else MyPipe(i.first, i.second)
     val out = if (o == null) MyPipe("stdout", "output.txt") else MyPipe(o.first, o.second)
     return RunScript(file, type, lang, tl, ml, `in`, out)
-}
-
-fun executeRunScript(script: RunScript) {
-    val file = Paths.get(script.file)
-
-    val type: FileType
-    val lang: Language?
-    when (script.type) {
-        FileType.auto -> {
-            lang = jValuer.languages.findByName(script.lang) ?: jValuer.languages.findByPath(file)
-            if (lang != null) {
-                println("Detected language: ${lang.name()}")
-                type = FileType.src
-            } else {
-                println("Language not found. Assuming file is exe")
-                type = FileType.exe
-            }
-        }
-        FileType.exe -> {
-            lang = jValuer.languages.findByName(script.lang)
-            type = FileType.exe
-        }
-        FileType.src -> {
-            type = FileType.src
-            lang = jValuer.languages.findByName(script.lang)
-            if (lang == null) {
-                println("Language ${script.lang} not found")
-                println("Available languages: " + langConfig.get()!!.map(Lang::id).toString())
-                return
-            }
-        }
-    }
-
-    assert(type != FileType.auto) { "Wat, report to GitHub." }
-
-    val exe: MyExecutable
-    if (type == FileType.src) {
-        exe = compileSrc(Source(file, lang))
-        exe.printLog()
-    } else {
-        exe = MyExecutable(file, DefaultInvoker(), null)
-    }
-
-    val limits = script.createLimits()
-
-    val runner = createRunnerBuilder()
-            .limits(limits).inOut(RunInOut(script.`in`.exe, script.out.exe)).buildSafe(exe)
-
-    val result = runner.run(PathData(file.resolveSibling(script.`in`.file))) //TODO: live action
-    if (script.out.file == "stdout") { //TODO
-        println(result.out.string)
-    } else {
-        Files.copy(result.out.path, file.resolveSibling(script.out.file), StandardCopyOption.REPLACE_EXISTING)
-    }
-    println(result.run)
 }
