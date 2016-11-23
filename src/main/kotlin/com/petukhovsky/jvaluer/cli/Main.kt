@@ -16,6 +16,7 @@ fun commandByName(name: String) =
             "init" -> Init
             "backup" -> Backup
             "run" -> Run
+            "run-script" -> RunScriptCmd
             else -> UnknownCommand
         }
 

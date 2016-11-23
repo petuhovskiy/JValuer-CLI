@@ -15,10 +15,11 @@ object Help : Command {
             |
             |jv commands:
             |
-            |   init    Create a jvaluer storage
-            |   run     Execute a binary
-            |   help    Display this message
-            |   run     Run program
+            |   init        Create a jvaluer storage
+            |   backup      Backup config
+            |   help        Display this message
+            |   run         Run program
+            |   run-script  Execute RunScript
             |
             |Use jv help <command> to display help for command
             """.trimMargin())
