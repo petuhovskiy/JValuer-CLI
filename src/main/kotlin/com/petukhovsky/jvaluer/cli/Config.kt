@@ -1,5 +1,6 @@
 package com.petukhovsky.jvaluer.cli
 
+import com.petukhovsky.jvaluer.JValuer
 import com.petukhovsky.jvaluer.JValuerBuilder
 import com.petukhovsky.jvaluer.cli.dbObject
 import com.petukhovsky.jvaluer.commons.invoker.Invoker
@@ -19,10 +20,3 @@ val jValuerConfig = dbObject<JValuerConfig>("jvaluer")
 val langConfig = dbObject<Array<Lang>>("lang")
 
 fun backupFromConfig() = ConfigBackup(langConfig.get()!!, jValuerConfig.get()!!)
-
-val jValuer by lazy { JValuerImpl(langConfig.get()!!.toLanguages(), configDir.resolve("jvaluer/"), null) }
-
-fun createRunnerBuilder(): RunnerBuilder = RunnerBuilder(jValuer).trusted(jValuerConfig.get()!!.trusted)
-
-fun RunnerBuilder.buildSafe(path: Path, lang: Language) = this.buildSafe(path, lang.invoker())
-fun RunnerBuilder.buildSafe(path: Path, invoker: Invoker) = this.buildSafe(Executable(path, invoker))!!
