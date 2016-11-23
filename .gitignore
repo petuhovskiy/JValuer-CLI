@@ -1,3 +1,7 @@
 build
+gradle
 .gradle
 .idea
+gradlew
+gradlew.bat
+.jv
