@@ -46,3 +46,14 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
 }
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'JValuer-CLI',
+                'Implementation-Version': version,
+                'Main-Class': 'com.petukhovsky.jvaluer.cli.MainKt'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

@@ -2,10 +2,17 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.petukhovsky.jvaluer.cli.*
 import com.petukhovsky.jvaluer.commons.compiler.CompilationResult
+import com.petukhovsky.jvaluer.commons.data.PathData
+import com.petukhovsky.jvaluer.commons.exe.Executable
+import com.petukhovsky.jvaluer.commons.invoker.DefaultInvoker
 import com.petukhovsky.jvaluer.commons.lang.Language
+import com.petukhovsky.jvaluer.commons.run.RunInOut
 import com.petukhovsky.jvaluer.commons.run.RunLimits
+import org.apache.commons.io.FileUtils
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 object Run : Command {
     override fun command(args: Array<String>) {
@@ -16,7 +23,8 @@ object Run : Command {
                 paramOf("-tl"),
                 paramOf("-ml"),
                 paramOf("-i"),
-                paramOf("-o")
+                paramOf("-o"),
+                paramOf("-script")
         )
 
         if (cmd.list.size != 1) {
@@ -55,7 +63,7 @@ object Run : Command {
             }
         }
 
-        val exe: Path
+        val exe: Executable
         if (lang != null) {
             val result = jValuer.compile(lang, file)
             println("Compilation log: " + result.comment)
@@ -63,7 +71,9 @@ object Run : Command {
                 println("Compilation failed.")
                 return
             }
-            exe = result.exe
+            exe = lang.createExecutable(result.exe)
+        } else {
+            exe = Executable(file, DefaultInvoker())
         }
 
         val limits = RunLimits.of(cmd.getOne("-tl"), cmd.getOne("-ml"))
@@ -71,17 +81,36 @@ object Run : Command {
         var outr = parseColon(cmd.getOne("-o")) ?: Pair("stdout", "output.txt")
 
         if (inr.second == "stdin") inr = Pair(inr.first, "input.txt") //TODO
-        
-        //TODO run
+
+        val runner = createRunnerBuilder()
+                .limits(limits).inOut(RunInOut(inr.first, outr.first)).buildSafe(exe)
+
+        val result = runner.run(PathData(file.resolveSibling(inr.second)))
+        if (outr.second == "stdout") {
+            println(result.out.string)
+        } else {
+            Files.copy(result.out.path, file.resolveSibling(outr.second), StandardCopyOption.REPLACE_EXISTING)
+        }
+        println(result.run)
     }
 
     override fun printHelp() {
         println("Usage:")
-        println(" jv <file> ( [-auto] | [-exe] | [-lang <lang_id>] ) \\")
-        println("[-tl <time-limit>] [-ml <memory-limit>] \\")
-        println("[-i <exe:in>] [-o <exe:out>] [-copy-exe <dest>]")
+        println("   jv run <file> ( [-auto] | [-exe] | [-lang <lang_id>] ) [-tl <time-limit>] [-ml <memory-limit>] " +
+                "[-i <exe:in>] [-o <exe:out>] [-script]")
         println()
+        println("Args:")
+        println("  -auto    Try to resolve language by source extension. On by default")
+        println("  -exe     Execute file as compiled binary")
+        println("  -lang    Find language by id and compile source")
         println()
+        println("  -tl      Time limit. 1s(second), 2m(minutes), 123ms(milliseconds)")
+        println("  -ml      Memory limit. bytes(b), kilobytes(k, kb), mebibytes(m, mib, mb)")
+        println()
+        println("  -i       Input source. For example, (default) stdin:input.txt means pipe input.txt > stdin")
+        println("  -o       Output destination. For example, (default) stdout:output.txt means pipe stdout > output.txt")
+        println()
+        println("  -script  Produces script without executing")
     }
 }
 

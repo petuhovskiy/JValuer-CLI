@@ -1,17 +1,15 @@
 package com.petukhovsky.jvaluer.cli
 
 import com.petukhovsky.jvaluer.cli.objectMapper
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
-import java.nio.file.StandardOpenOption
+import java.nio.file.*
 
 private val prefix = "db/"
+val dbDir = configDir.resolve(prefix)
 
 class DbObject<T>(path: String, val c: Class<T>) {
 
-    val bak = configDir.resolve("$path.bak")
-    val json = configDir.resolve("$path.json")
+    val bak = dbDir.resolve("$path.bak")
+    val json = dbDir.resolve("$path.json")
 
     fun exists() = Files.exists(bak) || Files.exists(json)
 

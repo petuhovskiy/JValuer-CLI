@@ -2,10 +2,7 @@ package com.petukhovsky.jvaluer.cli
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.petukhovsky.jvaluer.cli.cmd.Backup
-import com.petukhovsky.jvaluer.cli.cmd.Help
-import com.petukhovsky.jvaluer.cli.cmd.Init
-import com.petukhovsky.jvaluer.cli.cmd.UnknownCommand
+import com.petukhovsky.jvaluer.cli.cmd.*
 import java.io.InputStream
 
 fun main(args: Array<String>) {
@@ -18,6 +15,7 @@ fun commandByName(name: String) =
             "help" -> Help
             "init" -> Init
             "backup" -> Backup
+            "run" -> Run
             else -> UnknownCommand
         }
 

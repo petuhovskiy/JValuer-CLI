@@ -17,7 +17,10 @@ object Help : Command {
             |
             |   init    Create a jvaluer storage
             |   run     Execute a binary
-            |   printHelp    Display this message
+            |   help    Display this message
+            |   run     Run program
+            |
+            |Use jv help <command> to display help for command
             """.trimMargin())
     }
 }
