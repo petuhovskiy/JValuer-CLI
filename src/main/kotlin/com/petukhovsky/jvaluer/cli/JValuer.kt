@@ -73,7 +73,7 @@ fun runExe(exe: Executable,
 
 fun SafeRunner.runLive(test: TestData, liveProgress: Boolean = true): InvocationResult {
     fun verdictSign(verdict: RunVerdict): String =
-            if (verdict == RunVerdict.SUCCESS) "✓" else "❌"
+            if (verdict == RunVerdict.SUCCESS) "*" else "X" //TODO: use unicode symbols ✓❌
 
     fun verdictString(verdict: RunVerdict): String =
             if (verdict == RunVerdict.SUCCESS) "Ok" else verdict.toString()
