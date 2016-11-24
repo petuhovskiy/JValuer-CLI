@@ -17,7 +17,7 @@ data class Lang(val name: String,
                 val exts: Array<String>,
                 val compiler: Map<String, Any>?,
                 val invoker: Map<String, Any>?) {
-    fun toLanguage(): Language = Language(name, createCompiler(), createInvoker())
+    fun toLanguage(): Language = MyLanguage(name, createCompiler(), createInvoker(), this)
 
     private fun createCompiler(): Compiler = if (compiler == null) CloneCompiler() else
         when (compiler["type"]) {
@@ -45,6 +45,15 @@ data class Lang(val name: String,
     override fun hashCode(): Int {
         return Objects.hash(name, id, exts, compiler, invoker)
     }
+}
+
+class MyLanguage(name: String,
+                 compiler: Compiler,
+                 invoker: Invoker,
+                 val lang: Lang
+) : Language(name, compiler, invoker), HashableSHA {
+    override fun hashSHA(): MySHA = hashOf(lang.toString())
+
 }
 
 fun Array<Lang>.toLanguages() : Languages {
@@ -103,4 +112,11 @@ fun readInvoker(nextLine: () -> String = {readLine()!!}): Map<String, Any>? {
     print("Invoker pattern: ")
     val pattern = nextLine()
     return mapOf(Pair("exe", executable), Pair("pattern", pattern), Pair("type", "custom"))
+}
+
+fun hashOf(language: Language): MySHA {
+    if (language is MyLanguage) {
+        return language.hashSHA()
+    }
+    null!!
 }

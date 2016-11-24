@@ -1,10 +1,10 @@
 package com.petukhovsky.jvaluer.cli
 
 import com.petukhovsky.jvaluer.cli.objectMapper
+import com.petukhovsky.jvaluer.util.FilesUtils
 import java.nio.file.*
 
-private val prefix = "db/"
-val dbDir = configDir.resolve(prefix)
+val dbDir = configDir.resolve("db/")
 
 class DbObject<T>(path: String, val c: Class<T>) {
 
@@ -31,4 +31,20 @@ class DbObject<T>(path: String, val c: Class<T>) {
     }
 }
 
-inline fun <reified T : Any> dbObject(path: String) = DbObject(path, T::class.java)
+inline fun <reified T : Any> db(path: String) = DbObject(path, T::class.java)
+
+val objectsDir = configDir.resolve("objects/").apply { Files.createDirectories(this) }
+
+fun saveObject(path: Path): MySHA {
+    val hash = hashOf(path)
+    val nPath = objectsDir.resolve(hash.string)
+    if (Files.notExists(nPath) || hashOf(nPath) != hash) {
+        Files.copy(path, nPath)
+    }
+    return hash
+}
+
+fun getObject(hash: MySHA): Path? {
+    val path = objectsDir.resolve(hash.string)
+    return if (Files.notExists(path)) null else path
+}

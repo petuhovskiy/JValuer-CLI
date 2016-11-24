@@ -17,6 +17,7 @@ import com.petukhovsky.jvaluer.run.RunnerBuilder
 import com.petukhovsky.jvaluer.run.SafeRunner
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Instant
 
 val jValuer by lazy {
     try {
@@ -33,6 +34,12 @@ fun RunnerBuilder.buildSafe(path: Path, lang: Language) = this.buildSafe(path, l
 fun RunnerBuilder.buildSafe(path: Path, invoker: Invoker) = this.buildSafe(Executable(path, invoker))!!
 
 fun compileSrc(src: Source, liveProgress: Boolean = true): MyExecutable {
+    val dbSrc = dbSource(src)
+    val srcInfo = dbSrc.get()!!
+    if (srcInfo.exe != null) {
+        println("Already compiled at ${srcInfo.compiled}")
+        return MyExecutable(getObject(srcInfo.exe!!), src.language.invoker(), null, true)
+    }
     val result: CompilationResult
     if (!liveProgress) {
         println("Compiling...")
@@ -58,7 +65,12 @@ fun compileSrc(src: Source, liveProgress: Boolean = true): MyExecutable {
         }.execute()
         println()
     }
-    return MyExecutable(result.exe, src.language.invoker(), result)
+    if (result.isSuccess) {
+        srcInfo.compiled = Instant.now()
+        srcInfo.exe = saveObject(result.exe)
+        dbSrc.save(srcInfo)
+    }
+    return MyExecutable(result.exe, src.language.invoker(), result, result.isSuccess)
 }
 
 fun runExe(exe: Executable,
@@ -120,7 +132,7 @@ fun SafeRunner.runLive(test: TestData, liveProgress: Boolean = true): Invocation
     return result
 }
 
-class MyExecutable(path: Path?, invoker: Invoker?, val compilation: CompilationResult?) : Executable(path, invoker) {
+class MyExecutable(path: Path?, invoker: Invoker?, val compilation: CompilationResult?, val compilationSuccess: Boolean) : Executable(path, invoker) {
     fun exists(): Boolean = path != null && !Files.exists(path)
     fun printLog() = compilation?.printLog()
 }

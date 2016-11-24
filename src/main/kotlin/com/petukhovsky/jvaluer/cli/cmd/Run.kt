@@ -136,12 +136,12 @@ data class RunScript(
         if (type == FileType.src) {
             exe = compileSrc(Source(file, lang))
             exe.printLog()
-            if (exe.compilation == null || !exe.compilation.isSuccess) {
+            if (!exe.compilationSuccess) {
                 println("Compilation failed")
                 return
             }
         } else {
-            exe = MyExecutable(file, if (lang == null) DefaultInvoker() else lang.invoker(), null)
+            exe = MyExecutable(file, if (lang == null) DefaultInvoker() else lang.invoker(), null, true)
         }
 
         val limits = this.createLimits()

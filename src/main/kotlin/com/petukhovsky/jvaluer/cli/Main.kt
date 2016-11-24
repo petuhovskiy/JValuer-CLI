@@ -1,6 +1,7 @@
 package com.petukhovsky.jvaluer.cli
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.petukhovsky.jvaluer.cli.cmd.*
 import java.io.InputStream
@@ -20,7 +21,9 @@ fun commandByName(name: String) =
             else -> UnknownCommand
         }
 
-val objectMapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT) //TODO: indent db arg
+val objectMapper = jacksonObjectMapper()
+        .enable(SerializationFeature.INDENT_OUTPUT) //TODO: indent db arg
+        .registerModule(JavaTimeModule())
 
 fun readYN(default: Boolean? = true): Boolean? {
     val line = readLine() ?: return default
