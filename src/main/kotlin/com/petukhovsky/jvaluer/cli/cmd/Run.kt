@@ -136,22 +136,28 @@ data class RunScript(
         if (type == FileType.src) {
             exe = compileSrc(Source(file, lang))
             exe.printLog()
+            if (exe.compilation == null || !exe.compilation.isSuccess) {
+                println("Compilation failed")
+                return
+            }
         } else {
-            exe = MyExecutable(file, DefaultInvoker(), null)
+            exe = MyExecutable(file, if (lang == null) DefaultInvoker() else lang.invoker(), null)
         }
 
         val limits = this.createLimits()
 
-        val runner = createRunnerBuilder()
-                .limits(limits).inOut(RunInOut(this.`in`.exe, this.out.exe)).buildSafe(exe)
-
-        val result = runner.run(PathData(file.resolveSibling(this.`in`.file))) //TODO: live action
+        val result = runExe(
+                exe,
+                PathData(file.resolveSibling(this.`in`.file)),
+                limits,
+                RunInOut(this.`in`.exe, this.out.exe)
+        )
         if (this.out.file == "stdout") { //TODO
+            println("Out:")
             println(result.out.string)
         } else {
             Files.copy(result.out.path, file.resolveSibling(this.out.file), StandardCopyOption.REPLACE_EXISTING)
         }
-        println(result.run)
     }
 }
 
