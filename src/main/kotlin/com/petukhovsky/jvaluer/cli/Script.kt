@@ -4,7 +4,7 @@ interface Script {
     fun execute()
 }
 
-abstract class LiveProcess<R>(val update: Long = 100) {
+abstract class LiveProcess<R>(val update: Long = 30) {
 
     var started: Long = -1
     var ended: Long? = null
