@@ -33,7 +33,7 @@ object Run : Command {
     }
 
     override fun printHelp() {
-        println("Usage:")
+        println("usage:")
         println("   jv run <file> [-type <type>] [-lang <lang_id>] [-tl <time-limit>] [-ml <memory-limit>] " +
                 "[-i <exe:in>] [-o <exe:out>] [-script]")
         println()
