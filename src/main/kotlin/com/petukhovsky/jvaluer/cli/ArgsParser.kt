@@ -12,7 +12,7 @@ fun Command.parseArgs(args: Array<String>, vararg params: ParserParam, skipFirst
             if (arg !in map) {
                 println("""Unknown argument: "$arg"""")
                 printHelp()
-                System.exit(0)
+                null!!
             }
             val param = map[arg]!!
             if (param.flag) param.enabled = true
@@ -20,12 +20,12 @@ fun Command.parseArgs(args: Array<String>, vararg params: ParserParam, skipFirst
                 if (i >= args.size) {
                     println("Value of argument $arg isn't specified")
                     printHelp()
-                    System.exit(0)
+                    null!!
                 }
                 if (!param.stack && param.list.isNotEmpty()) {
                     println("""Too many "$arg" arguments""")
                     printHelp()
-                    System.exit(0)
+                    null!!
                 }
                 param.list.add(args[i++])
             }
@@ -36,7 +36,7 @@ fun Command.parseArgs(args: Array<String>, vararg params: ParserParam, skipFirst
     if (bad != null) {
         println("""Argument "${bad.name}" is required""")
         printHelp()
-        System.exit(0)
+        null!!
     }
     return result
 }

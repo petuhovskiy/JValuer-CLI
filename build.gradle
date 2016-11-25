@@ -43,6 +43,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 
+    // http://mvnrepository.com/artifact/org.freemarker/freemarker
+    compile group: 'org.freemarker', name: 'freemarker', version: '2.3.23'
+
     compile("org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}")
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }

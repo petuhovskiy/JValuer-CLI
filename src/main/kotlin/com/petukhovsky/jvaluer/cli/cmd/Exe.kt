@@ -1,6 +1,7 @@
 package com.petukhovsky.jvaluer.cli.cmd
 
 import com.petukhovsky.jvaluer.cli.*
+import java.nio.file.Paths
 
 object Exe : Command {
     override fun command(args: Array<String>) {
@@ -22,7 +23,7 @@ object Exe : Command {
         val file = cmd.list[0]
 
         val info = ExeInfo(
-                file,
+                Paths.get(file).toAbsolutePath().toString(),
                 FileType.valueOf(cmd.getOne("-type") ?: "auto"),
                 cmd.getOne("-lang"),
                 cmd.getOne("-tl"),

@@ -18,6 +18,7 @@ fun commandByName(name: String) =
             "backup" -> Backup
             "run" -> Run
             "script" -> ScriptCommand
+            "gen" -> Gen
             "exe" -> Exe
             else -> UnknownCommand
         }

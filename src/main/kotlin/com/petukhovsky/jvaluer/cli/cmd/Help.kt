@@ -20,6 +20,7 @@ object Help : Command {
             |   help        Display this message
             |   run         Run program
             |   script      Execute script
+            |   gen         Generate test
             |
             |Use jv help <command> to display help for command
             """.trimMargin())

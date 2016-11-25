@@ -20,6 +20,9 @@ object ScriptCommand : Command {
             "run" -> Files.newInputStream(path).use {
                 objectMapper.readValue<RunScript>(it).execute()
             }
+            "gen" -> Files.newInputStream(path).use {
+                objectMapper.readValue<GenScript>(it).execute()
+            }
             else -> {
                 println("Unknown command")
             }
@@ -30,7 +33,7 @@ object ScriptCommand : Command {
         println("usage: jv script <command> <file>")
         println()
         println("execute script in <file>")
-        println("available commands: [run]")
+        println("available commands: [run, gen]")
     }
 
 }

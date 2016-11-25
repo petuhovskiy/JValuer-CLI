@@ -80,13 +80,28 @@ fun runExe(exe: Executable,
            test: TestData = StringData(""),
            limits: RunLimits = RunLimits.unlimited(),
            io: RunInOut = RunInOut.std(),
+           args: String? = null,
            liveProgress: Boolean = true
 ): InvocationResult {
     val runner = createRunnerBuilder().inOut(io).limits(limits).buildSafe(exe)
-    return runner.runLive(test, liveProgress)
+    return runner.runLive(test, args, liveProgress)
 }
 
-fun SafeRunner.runLive(test: TestData, liveProgress: Boolean = true): InvocationResult {
+fun runExe(exe: ExeInfo,
+           test: TestData = StringData(""),
+           args: String? = null,
+           liveProgress: Boolean = true
+) =
+    runExe(
+            exe.toExecutable()!!,
+            test,
+            exe.createLimits(),
+            exe.io,
+            args,
+            liveProgress
+    )
+
+fun SafeRunner.runLive(test: TestData, args: String? = null, liveProgress: Boolean = true): InvocationResult {
     fun verdictSign(verdict: RunVerdict): String =
             if (verdict == RunVerdict.SUCCESS) "*" else "X" //TODO: use unicode symbols ✓❌
 
@@ -95,8 +110,9 @@ fun SafeRunner.runLive(test: TestData, liveProgress: Boolean = true): Invocation
 
 
     val result: InvocationResult
+    val argsArr = if (args == null) arrayOf() else arrayOf(args)
     if (!liveProgress) {
-        result = this.run(test)
+        result = this.run(test, *argsArr)
     } else {
         result = object : LiveProcess<InvocationResult>() {
 
@@ -119,7 +135,7 @@ fun SafeRunner.runLive(test: TestData, liveProgress: Boolean = true): Invocation
                 print("[${RunLimits.timeString(time)}]")
             }
 
-            override fun run(): InvocationResult = this@runLive.run(test)
+            override fun run(): InvocationResult = this@runLive.run(test, *argsArr)
 
         }.execute()
     }
@@ -156,7 +172,6 @@ data class ExeInfo(
         val ml: String?,
         val `in`: String,
         val out: String
-
 ) {
     fun createLimits(): RunLimits = RunLimits.of(tl, ml)
 
