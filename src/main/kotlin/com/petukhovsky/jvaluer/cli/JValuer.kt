@@ -36,11 +36,11 @@ fun createRunnerBuilder(): RunnerBuilder = RunnerBuilder(jValuer).trusted(jValue
 fun RunnerBuilder.buildSafe(path: Path, lang: Language) = this.buildSafe(path, lang.invoker())
 fun RunnerBuilder.buildSafe(path: Path, invoker: Invoker) = this.buildSafe(Executable(path, invoker))!!
 
-fun compileSrc(src: Source, liveProgress: Boolean = true): MyExecutable {
+fun compileSrc(src: Source, liveProgress: Boolean = true, allInfo: Boolean = true): MyExecutable {
     val dbSrc = dbSource(src)
     val srcInfo = dbSrc.get()!!
     if (srcInfo.exe != null) {
-        println("Already compiled at ${srcInfo.compiled}")
+        if (allInfo) println("Already compiled at ${srcInfo.compiled}")
         return MyExecutable(getObject(srcInfo.exe!!), src.language.invoker(), null, true)
     }
     val result: CompilationResult
@@ -90,10 +90,11 @@ fun runExe(exe: Executable,
 fun runExe(exe: ExeInfo,
            test: TestData = StringData(""),
            args: String? = null,
-           liveProgress: Boolean = true
+           liveProgress: Boolean = true,
+           allInfo: Boolean = true
 ) =
     runExe(
-            exe.toExecutable()!!,
+            exe.toExecutable(allInfo = allInfo)!!,
             test,
             exe.createLimits(),
             exe.io,
@@ -181,14 +182,14 @@ data class ExeInfo(
     val io: RunInOut
         @JsonIgnore get() = RunInOut(`in`, out)
 
-    fun toExecutable(): MyExecutable? {
+    fun toExecutable(allInfo: Boolean = true): MyExecutable? {
         val type: FileType
         val lang: Language?
         when (this.type) {
             FileType.auto -> {
                 lang = jValuer.languages.findByName(this.lang) ?: jValuer.languages.findByPath(path)
                 if (lang != null) {
-                    println("Detected language: ${lang.name()}")
+                    if (allInfo) println("Detected language: ${lang.name()}")
                     type = FileType.src
                 } else {
                     println("Language not found. Assuming file is exe")
@@ -214,7 +215,7 @@ data class ExeInfo(
 
         val exe: MyExecutable
         if (type == FileType.src) {
-            exe = compileSrc(Source(path, lang))
+            exe = compileSrc(Source(path, lang), allInfo = allInfo)
             exe.printLog()
             if (!exe.compilationSuccess) {
                 println("Compilation failed")

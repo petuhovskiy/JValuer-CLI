@@ -2,6 +2,7 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.petukhovsky.jvaluer.cli.*
+import com.petukhovsky.jvaluer.commons.run.InvocationResult
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
@@ -85,20 +86,25 @@ data class GenScript(
         val map: Map<String, Any> = mapOf()
 ) : Script {
     override fun execute() {
-        val args = processTemplate(
-                template,
-                HashMap(map).apply {
-                    if ("test" !in this) this["test"] = 1
-                    if ("time" !in this) this["time"] = System.currentTimeMillis()
-                }
-        )
-        val result = runExe(exe, args = args)
+        val result = generate()
         if (out == "stdout") {
             println("Out: ")
             println(result.out.string)
         } else if (out != null) {
             Files.copy(result.out.path, Paths.get(this.out), StandardCopyOption.REPLACE_EXISTING)
         }
+    }
+
+    fun generateArgs(test: Long = 1, pushTime: Boolean = true): String = processTemplate(
+            template,
+            HashMap(map).apply {
+                if ("test" !in this) this["test"] = test
+                if (pushTime && "time" !in this) this["time"] = System.currentTimeMillis()
+            }
+    )
+
+    fun generate(args: String = generateArgs(), allInfo: Boolean = true): InvocationResult {
+        return runExe(exe, args = args, allInfo = allInfo)
     }
 
 }
