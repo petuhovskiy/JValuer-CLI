@@ -17,12 +17,12 @@ fun commandByName(name: String) =
             "init" -> Init
             "backup" -> Backup
             "run" -> Run
-            "run-script" -> RunScriptCmd
+            "script" -> ScriptCommand
             else -> UnknownCommand
         }
 
 val objectMapper = jacksonObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT) //TODO: indent db arg
+        .enable(SerializationFeature.INDENT_OUTPUT) //TODO: indent cmd arg
         .registerModule(JavaTimeModule())
 
 fun readYN(default: Boolean? = true): Boolean? {

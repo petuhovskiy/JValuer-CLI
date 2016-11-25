@@ -1,5 +1,9 @@
 package com.petukhovsky.jvaluer.cli
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 interface Script {
     fun execute()
 }
@@ -30,4 +34,11 @@ abstract class LiveProcess<R>(val update: Long = 30) {
     }
 
     fun now(): Long = System.currentTimeMillis()
+}
+
+fun pathJSON(string: String): Path? {
+    val path1 = Paths.get(string + ".json")
+    if (Files.exists(path1)) return path1
+    val path2 = Paths.get(string)
+    return if (Files.exists(path2)) path2 else null
 }

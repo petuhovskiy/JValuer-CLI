@@ -19,7 +19,7 @@ object Help : Command {
             |   backup      Backup config
             |   help        Display this message
             |   run         Run program
-            |   run-script  Execute RunScript
+            |   script      Execute script
             |
             |Use jv help <command> to display help for command
             """.trimMargin())

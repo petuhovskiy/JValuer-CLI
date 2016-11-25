@@ -51,26 +51,6 @@ object Run : Command {
     }
 }
 
-object RunScriptCmd : Command {
-    override fun command(args: Array<String>) {
-        if (args.size != 2) return printHelp()
-        val file = if (Files.exists(Paths.get(args[1]))) Paths.get(args[1]) else Paths.get(args[1] + ".json")
-        if (!Files.exists(file)) {
-            println("File not found")
-            return
-        }
-        val script = Files.newInputStream(file).use { objectMapper.readValue<RunScript>(it) }
-        script.execute()
-    }
-
-    override fun printHelp() {
-        println("Usage: jv run-script <script-to-execute>")
-        println()
-        println("You can generate script with command jv run ... -script")
-        println("Enter 'jv help run' to learn more about it")
-    }
-}
-
 fun parseColon(s: String?): Pair<String, String>? {
     if (s == null) return null
     if (':' !in s) return Pair(s, s)
