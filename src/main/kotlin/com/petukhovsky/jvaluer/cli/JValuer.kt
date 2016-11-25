@@ -1,10 +1,12 @@
 package com.petukhovsky.jvaluer.cli
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.petukhovsky.jvaluer.JValuer
 import com.petukhovsky.jvaluer.commons.compiler.CompilationResult
 import com.petukhovsky.jvaluer.commons.data.StringData
 import com.petukhovsky.jvaluer.commons.data.TestData
 import com.petukhovsky.jvaluer.commons.exe.Executable
+import com.petukhovsky.jvaluer.commons.invoker.DefaultInvoker
 import com.petukhovsky.jvaluer.commons.invoker.Invoker
 import com.petukhovsky.jvaluer.commons.lang.Language
 import com.petukhovsky.jvaluer.commons.run.InvocationResult
@@ -17,6 +19,7 @@ import com.petukhovsky.jvaluer.run.RunnerBuilder
 import com.petukhovsky.jvaluer.run.SafeRunner
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Instant
 
 val jValuer by lazy {
@@ -138,3 +141,73 @@ class MyExecutable(path: Path?, invoker: Invoker?, val compilation: CompilationR
 }
 
 fun CompilationResult.printLog() = println("Compilation log: $comment")
+
+enum class FileType {
+    src,
+    exe,
+    auto
+}
+
+data class ExeInfo(
+        val file: String,
+        val type: FileType,
+        val lang: String?,
+        val tl: String?,
+        val ml: String?,
+        val `in`: String,
+        val out: String
+
+) {
+    fun createLimits(): RunLimits = RunLimits.of(tl, ml)
+
+    val path: Path
+        @JsonIgnore get() = Paths.get(file)
+
+    val io: RunInOut
+        @JsonIgnore get() = RunInOut(`in`, out)
+
+    fun toExecutable(): MyExecutable? {
+        val type: FileType
+        val lang: Language?
+        when (this.type) {
+            FileType.auto -> {
+                lang = jValuer.languages.findByName(this.lang) ?: jValuer.languages.findByPath(path)
+                if (lang != null) {
+                    println("Detected language: ${lang.name()}")
+                    type = FileType.src
+                } else {
+                    println("Language not found. Assuming file is exe")
+                    type = FileType.exe
+                }
+            }
+            FileType.exe -> {
+                lang = jValuer.languages.findByName(this.lang)
+                type = FileType.exe
+            }
+            FileType.src -> {
+                type = FileType.src
+                lang = jValuer.languages.findByName(this.lang)
+                if (lang == null) {
+                    println("Language ${this.lang} not found")
+                    println("Available languages: " + langConfig.get()!!.map(Lang::id).toString())
+                    return null
+                }
+            }
+        }
+
+        assert(type != FileType.auto) { "Wat, report to GitHub." }
+
+        val exe: MyExecutable
+        if (type == FileType.src) {
+            exe = compileSrc(Source(path, lang))
+            exe.printLog()
+            if (!exe.compilationSuccess) {
+                println("Compilation failed")
+                return null
+            }
+        } else {
+            exe = MyExecutable(path, if (lang == null) DefaultInvoker() else lang.invoker(), null, true)
+        }
+        return exe
+    }
+}
