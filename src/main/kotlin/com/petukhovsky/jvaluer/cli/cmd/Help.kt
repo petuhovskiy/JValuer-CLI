@@ -21,6 +21,7 @@ object Help : Command {
             |   run         Run program
             |   script      Execute script
             |   gen         Generate test
+            |   check       Check/compare two or more solutions
             |
             |Use jv help <command> to display help for command
             """.trimMargin())

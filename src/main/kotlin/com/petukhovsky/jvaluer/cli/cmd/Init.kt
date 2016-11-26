@@ -20,14 +20,12 @@ object Init : Command {
             }
         }
         if (cmd.has("--file")) {
-            val path = Paths.get(cmd.get("--file"))
-            if (!Files.exists(path)) {
+            val path = pathJSON(cmd.get("--file"))
+            if (path == null) {
                 println("File ${cmd.get("--file")} not found")
                 return
             }
-            val backup = Files.newInputStream(path).use {
-                objectMapper.readValue<ConfigBackup>(it)
-            }
+            val backup = readJSON<ConfigBackup>(path)
             jValuerConfig.save(backup.jvaluer)
             langConfig.save(backup.lang)
             println("Success")

@@ -2,29 +2,74 @@ package com.petukhovsky.jvaluer.cli
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.petukhovsky.jvaluer.JValuer
+import com.petukhovsky.jvaluer.commons.builtin.JValuerBuiltin
+import com.petukhovsky.jvaluer.commons.checker.Checker
 import com.petukhovsky.jvaluer.commons.compiler.CompilationResult
 import com.petukhovsky.jvaluer.commons.data.StringData
 import com.petukhovsky.jvaluer.commons.data.TestData
 import com.petukhovsky.jvaluer.commons.exe.Executable
+import com.petukhovsky.jvaluer.commons.gen.Generator
 import com.petukhovsky.jvaluer.commons.invoker.DefaultInvoker
 import com.petukhovsky.jvaluer.commons.invoker.Invoker
 import com.petukhovsky.jvaluer.commons.lang.Language
-import com.petukhovsky.jvaluer.commons.run.InvocationResult
-import com.petukhovsky.jvaluer.commons.run.RunInOut
-import com.petukhovsky.jvaluer.commons.run.RunLimits
-import com.petukhovsky.jvaluer.commons.run.RunVerdict
+import com.petukhovsky.jvaluer.commons.lang.Languages
+import com.petukhovsky.jvaluer.commons.run.*
 import com.petukhovsky.jvaluer.commons.source.Source
 import com.petukhovsky.jvaluer.impl.JValuerImpl
+import com.petukhovsky.jvaluer.lang.LanguagesImpl
 import com.petukhovsky.jvaluer.run.RunnerBuilder
 import com.petukhovsky.jvaluer.run.SafeRunner
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.time.Instant
+
+class DefInvokerBuiltin(
+        val invoker: Invoker,
+        val chain: JValuerBuiltin
+) : JValuerBuiltin {
+    override fun checker(s: String?): Checker = chain.checker(s)
+
+    override fun generator(s: String?): Generator = chain.generator(s)
+
+    override fun invoker(s: String?): Invoker = if (s == "default") invoker else chain.invoker(s)
+
+}
+
+class MyJValuer(
+        languages: Languages,
+        path: Path,
+        forceInvoker: String?
+) : JValuerImpl(languages, path, null) {
+
+    val myBuiltin by lazy {
+        if (forceInvoker == null) super.builtin()
+        else {
+            DefInvokerBuiltin(
+                    super.builtin()
+                            .invoker(forceInvoker) ?: throw NullPointerException("runexe invoker not supported"),
+                    super.builtin()
+            )
+        }
+    }
+
+    override fun builtin(): JValuerBuiltin = myBuiltin
+
+    override fun invokeDefault(runOptions: RunOptions?): RunInfo {
+        val def = myBuiltin.invoker("default") ?: throw UnsupportedOperationException("can't find default invoker")
+        return invoke(def, runOptions)
+    }
+}
 
 val jValuer by lazy {
     try {
-        JValuerImpl(langConfig.get()!!.toLanguages(), configDir.resolve("jvaluer/"), null)
+        val config = jValuerConfig.get()!!
+        if (config.forceInvoker == null) {
+            JValuerImpl(langConfig.get()!!.toLanguages(), configDir.resolve("jvaluer/"), null)
+        } else {
+            MyJValuer(langConfig.get()!!.toLanguages(), configDir.resolve("jvaluer/"), config.forceInvoker)
+        }
     } catch (e: Exception) {
         println("Can't initialize jValuer. Check your config, run 'jv init' if you still haven't")
         throw e
@@ -81,28 +126,36 @@ fun runExe(exe: Executable,
            limits: RunLimits = RunLimits.unlimited(),
            io: RunInOut = RunInOut.std(),
            args: String? = null,
-           liveProgress: Boolean = true
+           liveProgress: Boolean = true,
+           prefix: String = ""
 ): InvocationResult {
     val runner = createRunnerBuilder().inOut(io).limits(limits).buildSafe(exe)
-    return runner.runLive(test, args, liveProgress)
+    return runner.runLive(test, args, liveProgress, prefix = prefix)
 }
 
 fun runExe(exe: ExeInfo,
            test: TestData = StringData(""),
            args: String? = null,
            liveProgress: Boolean = true,
-           allInfo: Boolean = true
+           allInfo: Boolean = true,
+           prefix: String = ""
 ) =
     runExe(
-            exe.toExecutable(allInfo = allInfo)!!,
+            exe.toExecutable(allInfo = allInfo, liveProgress = liveProgress)!!,
             test,
             exe.createLimits(),
             exe.io,
             args,
-            liveProgress
+            liveProgress,
+            prefix = prefix
     )
 
-fun SafeRunner.runLive(test: TestData, args: String? = null, liveProgress: Boolean = true): InvocationResult {
+fun SafeRunner.runLive(
+        test: TestData,
+        args: String? = null,
+        liveProgress: Boolean = true,
+        prefix: String = ""
+): InvocationResult {
     fun verdictSign(verdict: RunVerdict): String =
             if (verdict == RunVerdict.SUCCESS) "*" else "X" //TODO: use unicode symbols ✓❌
 
@@ -122,7 +175,7 @@ fun SafeRunner.runLive(test: TestData, args: String? = null, liveProgress: Boole
             override fun update() {
                 val time: Long
                 val message: String
-                print("\r")
+                print("\r$prefix")
                 if (ended == null) {
                     time = now() - started
                     print("[${running[(time / 300).toInt() % 4]}]")
@@ -142,7 +195,7 @@ fun SafeRunner.runLive(test: TestData, args: String? = null, liveProgress: Boole
     }
     val run = result.run
     println(String.format(
-            "\r[%s] %-13s [%s; %s] %s",
+            "\r$prefix[%s] %-13s [%s; %s] %s",
             verdictSign(run.runVerdict),
             verdictString(run.runVerdict),
             run.timeString,
@@ -182,7 +235,10 @@ data class ExeInfo(
     val io: RunInOut
         @JsonIgnore get() = RunInOut(`in`, out)
 
-    fun toExecutable(allInfo: Boolean = true): MyExecutable? {
+    fun toExecutable(
+            liveProgress: Boolean = true,
+            allInfo: Boolean = true
+    ): MyExecutable? {
         val type: FileType
         val lang: Language?
         when (this.type) {
@@ -215,7 +271,7 @@ data class ExeInfo(
 
         val exe: MyExecutable
         if (type == FileType.src) {
-            exe = compileSrc(Source(path, lang), allInfo = allInfo)
+            exe = compileSrc(Source(path, lang), allInfo = allInfo, liveProgress = liveProgress)
             exe.printLog()
             if (!exe.compilationSuccess) {
                 println("Compilation failed")
@@ -227,3 +283,10 @@ data class ExeInfo(
         return exe
     }
 }
+
+fun TestData.copyIfNotNull(path: Path?) {
+    Files.copy(this.path, path ?: return, StandardCopyOption.REPLACE_EXISTING)
+}
+
+fun InvocationResult.isSuccess() = this.run.runVerdict == RunVerdict.SUCCESS
+fun InvocationResult.notSuccess() = !this.isSuccess()

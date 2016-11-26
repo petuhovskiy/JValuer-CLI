@@ -27,9 +27,7 @@ object Gen : Command {
             println("File not found")
             return
         }
-        val exe = Files.newInputStream(file).use {
-            objectMapper.readValue<ExeInfo>(it)
-        }
+        val exe = readJSON<ExeInfo>(file)
         val map = mutableMapOf<String, Any>()
         for (s in cmd.getAll("-D")) {
             val index = s.indexOf(":")
@@ -90,9 +88,7 @@ data class GenScript(
         if (out == "stdout") {
             println("Out: ")
             println(result.out.string)
-        } else if (out != null) {
-            Files.copy(result.out.path, Paths.get(this.out), StandardCopyOption.REPLACE_EXISTING)
-        }
+        } else result.out.copyIfNotNull(Paths.get(out))
     }
 
     fun generateArgs(test: Long = 1, pushTime: Boolean = true): String = processTemplate(
@@ -103,8 +99,12 @@ data class GenScript(
             }
     )
 
-    fun generate(args: String = generateArgs(), allInfo: Boolean = true): InvocationResult {
-        return runExe(exe, args = args, allInfo = allInfo)
+    fun generate(
+            args: String = generateArgs(),
+            allInfo: Boolean = true,
+            prefix: String = ""
+    ): InvocationResult {
+        return runExe(exe, args = args, allInfo = allInfo, prefix = prefix)
     }
 
 }

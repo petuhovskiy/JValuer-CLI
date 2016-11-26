@@ -77,9 +77,7 @@ data class RunScript(
         if (this.out == "stdout") { //TODO
             println("Out:")
             println(result.out.string)
-        } else if (this.out != null) {
-            Files.copy(result.out.path, exe.path.resolveSibling(this.out), StandardCopyOption.REPLACE_EXISTING)
-        }
+        } else result.out.copyIfNotNull(exe.path.resolveSibling(this.out))
     }
 }
 

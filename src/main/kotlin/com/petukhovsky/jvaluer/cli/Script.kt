@@ -20,7 +20,7 @@ abstract class LiveProcess<R>(val update: Long = 30) {
 
     fun execute(): R {
         result = null
-        val thread = Thread { result = run() }
+        val thread = Thread { result = run() }.apply { priority = Thread.MAX_PRIORITY }
         started = now()
         ended = null
         thread.start()

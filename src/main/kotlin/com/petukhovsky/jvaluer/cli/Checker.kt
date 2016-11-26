@@ -10,7 +10,7 @@ abstract class MyChecker {
 
     abstract fun check(`in`: TestData, answer: TestData, out: TestData): CheckResult
 
-    fun checkLive(`in`: TestData, answer: TestData, out: TestData): CheckResult {
+    fun checkLive(`in`: TestData, answer: TestData, out: TestData, prefix: String = ""): CheckResult {
         fun resultSign(result: CheckResult): String =
                 if (result.isCorrect) "*" else "X" //TODO: use unicode symbols ✓❌
 
@@ -24,7 +24,7 @@ abstract class MyChecker {
             override fun update() {
                 val time: Long
                 val message: String
-                print("\r")
+                print("\r$prefix")
                 if (ended == null) {
                     time = now() - started
                     print("[${running[(time / 300).toInt() % 4]}]")

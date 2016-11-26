@@ -13,8 +13,14 @@ import com.petukhovsky.jvaluer.commons.exe.Executable
 
 val configDir = Paths.get(".jv/")
 
-data class ConfigBackup(val lang: Array<Lang>, val jvaluer: JValuerConfig)
-data class JValuerConfig(val trusted: Boolean)
+data class ConfigBackup(
+        val lang: Array<Lang>,
+        val jvaluer: JValuerConfig = JValuerConfig()
+)
+data class JValuerConfig(
+        val trusted: Boolean = true,
+        val forceInvoker: String? = null
+)
 
 val jValuerConfig = db<JValuerConfig>("jvaluer")
 val langConfig = db<Array<Lang>>("lang")
