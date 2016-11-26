@@ -21,6 +21,7 @@ fun commandByName(name: String) =
             "gen" -> Gen
             "exe" -> Exe
             "check" -> Check
+            "shell" -> Shell
             else -> UnknownCommand
         }
 

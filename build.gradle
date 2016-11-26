@@ -35,6 +35,9 @@ repositories {
 dependencies {
 	compile 'com.github.petuhovskiy:JValuer:v1.1'
 
+    // https://mvnrepository.com/artifact/net.sf.jopt-simple/jopt-simple
+    //compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.3'
+
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.5"
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
