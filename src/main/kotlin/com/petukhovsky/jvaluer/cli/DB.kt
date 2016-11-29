@@ -23,6 +23,10 @@ class DbObject<T>(path: String, val c: Class<T>) {
         return objectMapper.readValue(json.toFile(), c)
     }
 
+    fun getOrDefault(): T {
+        return get() ?: c.newInstance()
+    }
+
     fun save(value: T) {
         Files.createDirectories(json.parent)
         if (Files.exists(json)) Files.move(json, bak, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)

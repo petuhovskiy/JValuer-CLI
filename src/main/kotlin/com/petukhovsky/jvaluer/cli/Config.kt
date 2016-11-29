@@ -22,7 +22,16 @@ data class JValuerConfig(
         val forceInvoker: String? = null
 )
 
+data class UIConfig(
+        val okSign: String = "*",
+        val wrongSign: String = "X",
+        val defaultUpdatePeriod: Long = 100
+)
+
 val jValuerConfig = db<JValuerConfig>("jvaluer")
 val langConfig = db<Array<Lang>>("lang")
+val uiConfig = db<UIConfig>("ui")
+
+val ui = uiConfig.getOrDefault().apply { uiConfig.save(this) }
 
 fun backupFromConfig() = ConfigBackup(langConfig.get()!!, jValuerConfig.get()!!)

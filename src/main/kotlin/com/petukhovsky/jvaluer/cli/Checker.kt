@@ -12,7 +12,7 @@ abstract class MyChecker {
 
     fun checkLive(`in`: TestData, answer: TestData, out: TestData, prefix: String = ""): CheckResult {
         fun resultSign(result: CheckResult): String =
-                if (result.isCorrect) "*" else "X" //TODO: use unicode symbols ✓❌
+                if (result.isCorrect) ui.okSign else ui.wrongSign
 
         fun resultString(result: CheckResult): String =
                 if (result.isCorrect) "Correct(${result.result})" else "Wrong(${result.result})"

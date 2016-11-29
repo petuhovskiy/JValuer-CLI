@@ -157,7 +157,7 @@ fun SafeRunner.runLive(
         prefix: String = ""
 ): InvocationResult {
     fun verdictSign(verdict: RunVerdict): String =
-            if (verdict == RunVerdict.SUCCESS) "*" else "X" //TODO: use unicode symbols ✓❌
+            if (verdict == RunVerdict.SUCCESS) ui.okSign else ui.wrongSign
 
     fun verdictString(verdict: RunVerdict): String =
             if (verdict == RunVerdict.SUCCESS) "Ok" else verdict.toString()
@@ -182,26 +182,23 @@ fun SafeRunner.runLive(
                     message = "Running..."
                 } else {
                     time = this.result!!.run.userTime
-                    print("[${verdictSign(this.result!!.run.runVerdict)}")
+                    print("[${verdictSign(this.result!!.run.runVerdict)}]")
                     message = verdictString(this.result!!.run.runVerdict)
                 }
                 print(String.format(" %-13s ", message))
-                print("[${RunLimits.timeString(time)}]")
+                if (ended == null) {
+                    print("[${RunLimits.timeString(time)}]")
+                } else {
+                    val run = this.result!!.run
+                    print("[${run.timeString}; ${run.memoryString}] ${run.comment}")
+                }
             }
 
             override fun run(): InvocationResult = this@runLive.run(test, *argsArr)
 
         }.execute()
     }
-    val run = result.run
-    println(String.format(
-            "\r$prefix[%s] %-13s [%s; %s] %s",
-            verdictSign(run.runVerdict),
-            verdictString(run.runVerdict),
-            run.timeString,
-            run.memoryString,
-            run.comment
-    ))
+    println()
     return result
 }
 

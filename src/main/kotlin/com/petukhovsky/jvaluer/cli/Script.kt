@@ -8,7 +8,7 @@ interface Script {
     fun execute()
 }
 
-abstract class LiveProcess<R>(val update: Long = 30) {
+abstract class LiveProcess<R>(val update: Long = ui.defaultUpdatePeriod) {
 
     var started: Long = -1
     var ended: Long? = null
