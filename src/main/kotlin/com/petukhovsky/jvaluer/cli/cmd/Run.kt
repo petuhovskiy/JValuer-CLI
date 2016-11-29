@@ -95,7 +95,7 @@ fun buildRunScript(cmd: PrettyArgs): RunScript? {
     }
     return RunScript(
             ExeInfo(
-                    Paths.get(file).toAbsolutePath().toString(),
+                    file,
                     FileType.valueOf(cmd.getOne("-type") ?: "auto"),
                     cmd.getOne("-lang"),
                     cmd.getOne("-tl"),

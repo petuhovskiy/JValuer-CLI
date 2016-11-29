@@ -3,6 +3,7 @@ package com.petukhovsky.jvaluer.cli.cmd
 import com.petukhovsky.jvaluer.cli.*
 import com.petukhovsky.jvaluer.commons.checker.TokenChecker
 
+//TODO: check script
 object Check : Command {
     override fun command(args: Array<String>) {
         val cmd = parseArgs(args,

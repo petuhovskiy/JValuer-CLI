@@ -23,7 +23,7 @@ object Exe : Command {
         val file = cmd.list[0]
 
         val info = ExeInfo(
-                Paths.get(file).toAbsolutePath().toString(),
+                file,
                 FileType.valueOf(cmd.getOne("-type") ?: "auto"),
                 cmd.getOne("-lang"),
                 cmd.getOne("-tl"),
