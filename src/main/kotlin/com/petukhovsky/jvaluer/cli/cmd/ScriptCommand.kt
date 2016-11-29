@@ -2,6 +2,7 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.petukhovsky.jvaluer.cli.copyIfNotNull
+import com.petukhovsky.jvaluer.cli.getNullablePath
 import com.petukhovsky.jvaluer.cli.objectMapper
 import com.petukhovsky.jvaluer.cli.pathJSON
 import java.nio.file.Files
@@ -26,8 +27,13 @@ object ScriptCommand : Command {
                     objectMapper.readValue<GenScript>(it)
                 }
                 if (args.size > 3) {
+                    val dest = getNullablePath(args[3])
+                    if (dest == null) {
+                        println("File ${args[3]} not found")
+                        return
+                    }
                     val result = script.generate()
-                    result.out.copyIfNotNull(path)
+                    result.out.copyIfNotNull(dest)
                 } else script.execute()
             }
             else -> {
