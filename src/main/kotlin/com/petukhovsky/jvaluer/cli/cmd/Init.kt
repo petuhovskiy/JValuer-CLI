@@ -20,11 +20,7 @@ object Init : Command {
             }
         }
         if (cmd.has("--file")) {
-            val path = pathJSON(cmd.get("--file"))
-            if (path == null) {
-                println("File ${cmd.get("--file")} not found")
-                return
-            }
+            val path = pathJSON(cmd.get("--file")) ?: return
             val backup = readJSON<ConfigBackup>(path)
             jValuerConfig.save(backup.jvaluer)
             langConfig.save(backup.lang)

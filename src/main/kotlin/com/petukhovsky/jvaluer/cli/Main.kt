@@ -20,16 +20,14 @@ fun commandByName(name: String) =
             "script" -> ScriptCommand
             "gen" -> Gen
             "exe" -> Exe
-            "check" -> Check
+            "checker" -> Checker
             "shell" -> Shell
             else -> UnknownCommand
         }
 
 val objectMapper = jacksonObjectMapper()
-        .apply {
-            if (ui.indent) enable(SerializationFeature.INDENT_OUTPUT)
-            registerModule(JavaTimeModule())
-        }
+        .enable(SerializationFeature.INDENT_OUTPUT)
+        .registerModule(JavaTimeModule())
 
 fun readYN(default: Boolean? = true): Boolean? {
     val line = readLine() ?: return default

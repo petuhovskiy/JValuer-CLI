@@ -24,7 +24,7 @@ class DbObject<T>(path: String, val c: Class<T>) {
     }
 
     fun getOrDefault(): T {
-        return get() ?: c.newInstance()
+        return try { get() } catch (e: Exception) { null } ?: c.newInstance()
     }
 
     fun save(value: T) {

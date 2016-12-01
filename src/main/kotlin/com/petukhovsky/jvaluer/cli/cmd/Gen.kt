@@ -10,6 +10,7 @@ object Gen : Command {
                 paramOf("-t"),
                 paramOf("-D", stack = true),
                 paramOf("-Dl", stack = true),
+                paramOf("-out"),
                 paramFlagOf("-script")
         )
         if (cmd.list.size != 1) {
@@ -17,11 +18,7 @@ object Gen : Command {
             printHelp()
             return
         }
-        val file = pathJSON(cmd.list[0])
-        if (file == null) {
-            println("File not found")
-            return
-        }
+        val file = pathJSON(cmd.list[0]) ?: return
         val exe = readJSON<ExeInfo>(file)
         val map = mutableMapOf<String, Any>()
         for (s in cmd.getAll("-D")) {

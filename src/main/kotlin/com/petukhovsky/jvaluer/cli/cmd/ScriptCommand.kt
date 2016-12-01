@@ -22,6 +22,7 @@ object ScriptCommand : Command {
                     result.out.copyIfNotNull(dest)
                 } else script.execute()
             }
+            "checker" -> readJSON<CheckerScript>(path).execute()
             else -> {
                 println("Unknown command")
             }
@@ -35,6 +36,7 @@ object ScriptCommand : Command {
         println("available commands:")
         println("   run     run script")
         println("   gen     generate from gen script to file 'gen gen.json input.txt'")
+        println("   checker checker script")
     }
 
 }
