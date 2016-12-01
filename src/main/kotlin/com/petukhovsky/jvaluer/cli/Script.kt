@@ -36,9 +36,12 @@ abstract class LiveProcess<R>(val update: Long = ui.defaultUpdatePeriod) {
     fun now(): Long = System.currentTimeMillis()
 }
 
-fun pathJSON(string: String): Path? {
+fun pathJSON(string: String, ifNull: () -> Unit = { println("File $string not found.") }): Path? {
     val path1 = Paths.get(string + ".json")
     if (Files.exists(path1)) return path1
     val path2 = Paths.get(string)
-    return if (Files.exists(path2)) path2 else null
+    return if (Files.exists(path2)) path2 else {
+        ifNull()
+        null
+    }
 }

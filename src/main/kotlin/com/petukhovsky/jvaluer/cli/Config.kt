@@ -25,7 +25,8 @@ data class JValuerConfig(
 data class UIConfig(
         val okSign: String = "*",
         val wrongSign: String = "X",
-        val defaultUpdatePeriod: Long = 100
+        val defaultUpdatePeriod: Long = 100,
+        val indent: Boolean = true
 )
 
 val jValuerConfig = db<JValuerConfig>("jvaluer")

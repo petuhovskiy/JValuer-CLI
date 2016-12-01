@@ -1,11 +1,9 @@
 package com.petukhovsky.jvaluer.cli.cmd
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.petukhovsky.jvaluer.cli.copyIfNotNull
 import com.petukhovsky.jvaluer.cli.getNullablePath
-import com.petukhovsky.jvaluer.cli.objectMapper
 import com.petukhovsky.jvaluer.cli.pathJSON
-import java.nio.file.Files
+import com.petukhovsky.jvaluer.cli.readJSON
 
 object ScriptCommand : Command {
     override fun command(args: Array<String>) {
@@ -13,25 +11,13 @@ object ScriptCommand : Command {
             printHelp()
             return
         }
-        val path = pathJSON(args[2])
-        if (path == null) {
-            println("File not found")
-            return
-        }
+        val path = pathJSON(args[2]) ?: return
         when (args[1]) {
-            "run" -> Files.newInputStream(path).use {
-                objectMapper.readValue<RunScript>(it).execute()
-            }
+            "run" -> readJSON<RunScript>(path).execute()
             "gen" -> {
-                val script = Files.newInputStream(path).use {
-                    objectMapper.readValue<GenScript>(it)
-                }
+                val script = readJSON<GenScript>(path)
                 if (args.size > 3) {
                     val dest = getNullablePath(args[3])
-                    if (dest == null) {
-                        println("File ${args[3]} not found")
-                        return
-                    }
                     val result = script.generate()
                     result.out.copyIfNotNull(dest)
                 } else script.execute()

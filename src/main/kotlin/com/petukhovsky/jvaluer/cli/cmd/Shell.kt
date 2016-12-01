@@ -8,10 +8,9 @@ object Shell : Command {
         while (true) {
             print("> ")
             val s = readLine() ?: return
-            if (s.trim() == "exit") return
+            if (s.trim().equals("exit", ignoreCase = true)) return
             val arr = parseArgs(s)
 
-            println(Arrays.toString(arr))
             if (arr.isEmpty()) return Help.command(arr)
             if (arr[0] == "init") {
                 println("Can't invoke 'init' from shell")

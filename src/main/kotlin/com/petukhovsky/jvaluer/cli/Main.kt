@@ -26,8 +26,10 @@ fun commandByName(name: String) =
         }
 
 val objectMapper = jacksonObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT) //TODO: indent cmd arg
-        .registerModule(JavaTimeModule())
+        .apply {
+            if (ui.indent) enable(SerializationFeature.INDENT_OUTPUT)
+            registerModule(JavaTimeModule())
+        }
 
 fun readYN(default: Boolean? = true): Boolean? {
     val line = readLine() ?: return default
