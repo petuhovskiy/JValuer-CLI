@@ -25,9 +25,11 @@ fun commandByName(name: String) =
             else -> UnknownCommand
         }
 
-val objectMapper = jacksonObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT)
-        .registerModule(JavaTimeModule())
+val objectMapper by lazy {
+    jacksonObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .registerModule(JavaTimeModule())
+}
 
 fun readYN(default: Boolean? = true): Boolean? {
     val line = readLine() ?: return default

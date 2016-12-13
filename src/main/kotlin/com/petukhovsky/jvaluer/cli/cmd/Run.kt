@@ -58,13 +58,15 @@ fun parseColon(s: String?): Pair<String, String>? {
     return Pair(s.substring(0..(index - 1)), s.substring(index + 1))
 }
 
-data class RunScript(
+class RunScript(
         val exe: ExeInfo,
         val `in`: String = "input.txt",
         val out: String? = "output.txt"
-) : Script {
+) : Script() {
 
     override fun execute() {
+        exe.locationPath = this.locationPath
+
         val myExe = exe.toExecutable() ?: return
         val limits = exe.createLimits()
 

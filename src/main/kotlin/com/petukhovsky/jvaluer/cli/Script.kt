@@ -1,47 +1,19 @@
 package com.petukhovsky.jvaluer.cli
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-interface Script {
-    fun execute()
-}
+abstract class Script(
+        @JsonIgnore var locationPath: Path? = null
+) {
+    open fun execute() {}
 
-abstract class LiveProcess<R>(val update: Long = ui.defaultUpdatePeriod) {
-
-    var started: Long = -1
-    var ended: Long? = null
-
-    var result: R? = null
-
-    abstract fun update()
-    abstract fun run(): R
-
-    fun execute(): R {
-        result = null
-        val thread = Thread { result = run() }.apply { priority = Thread.MAX_PRIORITY }
-        started = now()
-        ended = null
-        thread.start()
-        while (thread.isAlive) {
-            update()
-            thread.join(update)
-        }
-        ended = now()
-        update()
-        return result!!
-    }
-
-    fun now(): Long = System.currentTimeMillis()
-}
-
-fun pathJSON(string: String, ifNull: () -> Unit = { println("File $string not found.") }): Path? {
-    val path1 = Paths.get(string + ".json")
-    if (Files.exists(path1)) return path1
-    val path2 = Paths.get(string)
-    return if (Files.exists(path2)) path2 else {
-        ifNull()
-        null
+    fun resolve(string: String): Path {
+        return locationPath?.resolveSibling(string) ?: Paths.get(string)
     }
 }
+
+inline fun <reified T: Script> readScript(path: Path): T = readJSON<T>(path).apply { locationPath = path }
+inline fun <reified T: Script> readScript(string: String): T = readScript<T>(Paths.get(string))

@@ -19,15 +19,15 @@ object Checker : Command {
             println("Must be at least one exe")
         }
 
-        val model = readJSON<ExeInfo>(pathJSON(cmd.list[0]) ?: return)
-        val gen = readJSON<GenScript>(pathJSON(cmd.get("-gen")) ?: return)
+        val model = readScript<ExeInfo>(cmd.list[0])
+        val gen = readScript<GenScript>(cmd.get("-gen"))
 
         val arr = (1..cmd.list.size - 1).mapTo(mutableListOf<ExeInfo>()) {
-            readJSON<ExeInfo>(pathJSON(cmd.list[it]) ?: return)
+            readScript<ExeInfo>(cmd.list[it])
         }.toTypedArray()
 
         val checkString = cmd.getOne("-check")
-        val check = if (checkString == null) null else readJSON<ExeInfo>(pathJSON(checkString) ?: return)
+        val check = if (checkString == null) null else readScript<ExeInfo>(checkString)
 
         val script = CheckerScript(
                 model, arr, gen, check,
@@ -57,14 +57,19 @@ object Checker : Command {
 
 }
 
-data class CheckerScript(
+class CheckerScript(
         val model: ExeInfo,
         val exe: Array<ExeInfo>,
         val gen: GenScript,
         val check: ExeInfo?,
         val out: OutInfo
-) : Script {
+) : Script() {
     override fun execute() {
+        model.locationPath = locationPath
+        exe.forEach { it.locationPath = locationPath }
+        gen.locationPath = locationPath
+        check?.locationPath = locationPath
+
         val checker: MyChecker =
                 if (check != null) MyRunnableChecker(check)
                 else MyChainChecker(TokenChecker())

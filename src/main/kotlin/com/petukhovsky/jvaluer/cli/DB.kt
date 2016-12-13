@@ -20,7 +20,9 @@ class DbObject<T>(path: String, val c: Class<T>) {
             return get()
         }
         assert(Files.exists(json), {"Unexpected missing file: ${json.toAbsolutePath()}"})
-        return objectMapper.readValue(json.toFile(), c)
+        Files.newInputStream(json).use {
+            return objectMapper.readValue(it, c)
+        }
     }
 
     fun getOrDefault(): T {

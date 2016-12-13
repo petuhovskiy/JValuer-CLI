@@ -2,6 +2,7 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.petukhovsky.jvaluer.cli.*
 import com.petukhovsky.jvaluer.commons.run.InvocationResult
+import java.nio.file.Paths
 import java.util.*
 
 object Gen : Command {
@@ -18,8 +19,7 @@ object Gen : Command {
             printHelp()
             return
         }
-        val file = pathJSON(cmd.list[0]) ?: return
-        val exe = readJSON<ExeInfo>(file)
+        val exe = readScript<ExeInfo>(cmd.list[0])
         val map = mutableMapOf<String, Any>()
         for (s in cmd.getAll("-D")) {
             val index = s.indexOf(":")
@@ -68,11 +68,11 @@ object Gen : Command {
 
 }
 
-data class GenScript(
+class GenScript(
         val exe: ExeInfo,
         val template: String = """${'$'}{test} ${'$'}{time}""",
         val map: Map<String, Any> = mapOf()
-) : Script {
+) : Script() {
     override fun execute() {
         val result = generate()
         println("Out: ")
@@ -92,6 +92,7 @@ data class GenScript(
             allInfo: Boolean = true,
             prefix: String = ""
     ): InvocationResult {
+        exe.locationPath = locationPath;
         return runExe(exe, args = args, allInfo = allInfo, prefix = prefix)
     }
 

@@ -215,7 +215,7 @@ enum class FileType {
     auto
 }
 
-data class ExeInfo(
+class ExeInfo(
         val file: String,
         val type: FileType,
         val lang: String?,
@@ -223,11 +223,11 @@ data class ExeInfo(
         val ml: String?,
         val `in`: String,
         val out: String
-) {
+) : Script() {
     fun createLimits(): RunLimits = RunLimits.of(tl, ml)
 
     val path: Path
-        @JsonIgnore get() = Paths.get(file)
+        @JsonIgnore get() = resolve(file)
 
     val io: RunInOut
         @JsonIgnore get() = RunInOut(`in`, out)
@@ -278,6 +278,10 @@ data class ExeInfo(
             exe = MyExecutable(path, if (lang == null) DefaultInvoker() else lang.invoker(), null, true)
         }
         return exe
+    }
+
+    override fun execute() {
+        toExecutable()
     }
 }
 

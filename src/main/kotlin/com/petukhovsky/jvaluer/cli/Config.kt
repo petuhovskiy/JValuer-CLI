@@ -33,6 +33,6 @@ val jValuerConfig = db<JValuerConfig>("jvaluer")
 val langConfig = db<Array<Lang>>("lang")
 val uiConfig = db<UIConfig>("ui")
 
-val ui = uiConfig.getOrDefault().apply { uiConfig.save(this) }
+val ui by lazy { uiConfig.getOrDefault().apply { if (!uiConfig.exists()) uiConfig.save(this) } }
 
 fun backupFromConfig() = ConfigBackup(langConfig.get()!!, jValuerConfig.get()!!)
