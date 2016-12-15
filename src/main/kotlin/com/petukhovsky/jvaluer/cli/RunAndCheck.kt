@@ -28,7 +28,10 @@ fun runAndCheck(exe: Executable,
 ): RunAndCheckResult {
     val runner = createRunnerBuilder().inOut(io).limits(limits).buildSafe(exe)
     val invocation = runner.runLive(test.`in`, args, liveProgress, prefix = prefix, ln = false)
-    if (invocation.notSuccess()) return RunAndCheckResult(invocation, null)
+    if (invocation.notSuccess()) {
+        println()
+        return RunAndCheckResult(invocation, null)
+    }
     val check = checker.checkLive(test.`in`, test.out, invocation.out, prefix = prefix, suffix = invocation.run.shortInfo)
     return RunAndCheckResult(invocation, check)
 }
