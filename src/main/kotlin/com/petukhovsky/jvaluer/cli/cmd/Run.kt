@@ -9,6 +9,7 @@ import com.petukhovsky.jvaluer.commons.run.RunInOut
 import com.petukhovsky.jvaluer.commons.run.RunLimits
 import com.petukhovsky.jvaluer.commons.source.Source
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
@@ -65,8 +66,6 @@ class RunScript(
 ) : Script() {
 
     override fun execute() {
-        exe.locationPath = this.locationPath
-
         val myExe = exe.toExecutable() ?: return
         val limits = exe.createLimits()
 
@@ -80,6 +79,11 @@ class RunScript(
             println("Out:")
             println(result.out.string)
         } else result.out.copyIfNotNull(exe.path.resolveSibling(this.out))
+    }
+
+    override fun applyLocation(dir: Path?) {
+        super.applyLocation(dir)
+        exe.applyLocation(dir)
     }
 }
 

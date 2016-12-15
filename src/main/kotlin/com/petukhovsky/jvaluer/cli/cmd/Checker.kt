@@ -26,8 +26,7 @@ object Checker : Command {
             readScript<ExeInfo>(cmd.list[it])
         }.toTypedArray()
 
-        val checkString = cmd.getOne("-check")
-        val check = if (checkString == null) null else readScript<ExeInfo>(checkString)
+        val check = cmd.getOne("-check")?.let { readScript<ExeInfo>(it) }
 
         val script = CheckerScript(
                 model, arr, gen, check,
@@ -47,7 +46,7 @@ object Checker : Command {
     }
 
     override fun printHelp() {
-        println("usage: jv check <exe-script.1> <exe-script.2>... -gen <gen-script> [-check <exe-script>] "
+        println("usage: jv checker <exe-script.1> <exe-script.2>... -gen <gen-script> [-check <exe-script>] "
                 + "[-out-test <file>] [-out-ans <file>] [-out-wrong <file>] [-script]")
         println()
         println("   -out-test       Copy found test to file")
@@ -65,11 +64,6 @@ class CheckerScript(
         val out: OutInfo
 ) : Script() {
     override fun execute() {
-        model.locationPath = locationPath
-        exe.forEach { it.locationPath = locationPath }
-        gen.locationPath = locationPath
-        check?.locationPath = locationPath
-
         val checker: MyChecker =
                 if (check != null) MyRunnableChecker(check)
                 else MyChainChecker(TokenChecker())
@@ -116,6 +110,14 @@ class CheckerScript(
                 }
             }
         }
+    }
+
+    override fun applyLocation(dir: Path?) {
+        super.applyLocation(dir)
+        model.applyLocation(dir)
+        exe.forEach { it.applyLocation(dir) }
+        gen.applyLocation(dir)
+        check?.applyLocation(dir)
     }
 }
 

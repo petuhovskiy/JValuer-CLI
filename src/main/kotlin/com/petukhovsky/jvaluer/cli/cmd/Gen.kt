@@ -2,6 +2,7 @@ package com.petukhovsky.jvaluer.cli.cmd
 
 import com.petukhovsky.jvaluer.cli.*
 import com.petukhovsky.jvaluer.commons.run.InvocationResult
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
@@ -92,8 +93,12 @@ class GenScript(
             allInfo: Boolean = true,
             prefix: String = ""
     ): InvocationResult {
-        exe.locationPath = locationPath;
         return runExe(exe, args = args, allInfo = allInfo, prefix = prefix)
+    }
+
+    override fun applyLocation(dir: Path?) {
+        super.applyLocation(dir)
+        exe.applyLocation(dir)
     }
 
 }

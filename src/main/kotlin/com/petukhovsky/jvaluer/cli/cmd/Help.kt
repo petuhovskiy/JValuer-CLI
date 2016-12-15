@@ -21,7 +21,9 @@ object Help : Command {
             |   run         Run program
             |   script      Execute script
             |   gen         Generate test
-            |   check       Check/compare two or more solutions
+            |   check       Check <in> <answer> <out>
+            |   checker     Check/compare two or more solutions
+            |   tests-check Run all tests in specified directory
             |
             |Use jv help <command> to display help for command
             """.trimMargin())

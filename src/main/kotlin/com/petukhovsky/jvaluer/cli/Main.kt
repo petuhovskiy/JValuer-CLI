@@ -20,8 +20,10 @@ fun commandByName(name: String) =
             "script" -> ScriptCommand
             "gen" -> Gen
             "exe" -> Exe
+            "check" -> Check
             "checker" -> Checker
             "shell" -> Shell
+            "tests-check" -> TestsCheck
             else -> UnknownCommand
         }
 

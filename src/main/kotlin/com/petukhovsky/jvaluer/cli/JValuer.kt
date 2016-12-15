@@ -154,7 +154,8 @@ fun SafeRunner.runLive(
         test: TestData,
         args: String? = null,
         liveProgress: Boolean = true,
-        prefix: String = ""
+        prefix: String = "",
+        ln: Boolean = true
 ): InvocationResult {
     fun verdictSign(verdict: RunVerdict): String =
             if (verdict == RunVerdict.SUCCESS) ui.okSign else ui.wrongSign
@@ -190,7 +191,7 @@ fun SafeRunner.runLive(
                     print("[${RunLimits.timeString(time)}]")
                 } else {
                     val run = this.result!!.run
-                    print("[${run.timeString}; ${run.memoryString}] ${run.comment}")
+                    print(run.shortInfo)
                 }
             }
 
@@ -198,7 +199,7 @@ fun SafeRunner.runLive(
 
         }.execute()
     }
-    println()
+    if (ln) println()
     return result
 }
 
@@ -231,6 +232,9 @@ class ExeInfo(
 
     val io: RunInOut
         @JsonIgnore get() = RunInOut(`in`, out)
+
+    val name: String
+        @JsonIgnore get() = path.fileName.toString()
 
     fun toExecutable(
             liveProgress: Boolean = true,
@@ -291,3 +295,6 @@ fun TestData.copyIfNotNull(path: Path?) {
 
 fun InvocationResult.isSuccess() = this.run.runVerdict == RunVerdict.SUCCESS
 fun InvocationResult.notSuccess() = !this.isSuccess()
+
+val RunInfo.shortInfo: String
+        get() = "[$timeString; $memoryString]"

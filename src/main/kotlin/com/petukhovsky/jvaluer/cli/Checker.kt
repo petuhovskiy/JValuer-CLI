@@ -10,7 +10,13 @@ abstract class MyChecker {
 
     abstract fun check(`in`: TestData, answer: TestData, out: TestData): CheckResult
 
-    fun checkLive(`in`: TestData, answer: TestData, out: TestData, prefix: String = ""): CheckResult {
+    fun checkLive(
+            `in`: TestData,
+            answer: TestData,
+            out: TestData,
+            prefix: String = "",
+            suffix: String? = null
+    ): CheckResult {
         fun resultSign(result: CheckResult): String =
                 if (result.isCorrect) ui.okSign else ui.wrongSign
 
@@ -35,7 +41,7 @@ abstract class MyChecker {
                     message = resultString(this.result!!)
                 }
                 print(String.format(" %-13s ", message))
-                print("[${RunLimits.timeString(time)}]")
+                print(suffix ?: "[${RunLimits.timeString(time)}]")
                 if (ended != null) print(" ${result!!.comment}")
             }
 
@@ -58,10 +64,10 @@ class MyRunnableChecker(
         exe: ExeInfo
 ) : MyChecker() {
 
-    val runner = createRunnerBuilder().inOut(exe.io).limits(exe.createLimits()).buildSafe(exe.toExecutable())!!
+    val runner = createRunnerBuilder().inOut(exe.io).limits(exe.createLimits()).buildSafe(exe.toExecutable(allInfo = false))!!
 
     override fun check(`in`: TestData, answer: TestData, out: TestData): CheckResult {
-        val result = runner.run(StringData(""), `in`.path.toString(), out.path.toString(), answer.path.toString())
-        return CheckResult(result.run.exitCode == 0L, result.out.string)
+        val result = runner.run(StringData(""), `in`.path.toAbsolutePath().toString(), out.path.toAbsolutePath().toString(), answer.path.toAbsolutePath().toString())
+        return CheckResult(result.run.exitCode == 0L, result.out.string.trim())
     }
 }
