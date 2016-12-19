@@ -78,7 +78,7 @@ class RunScript(
         if (this.out == "stdout") { //TODO
             println("Out:")
             println(result.out.string)
-        } else result.out.copyIfNotNull(resolve(this.out))
+        } else result.out.copyIfNotNull(resolve(this.out ?: return))
     }
 
     override fun applyLocation(dir: Path?) {

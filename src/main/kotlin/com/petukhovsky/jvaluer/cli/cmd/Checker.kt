@@ -90,21 +90,12 @@ class CheckerScript(
                 return
             }
             for (i in exe.indices) {
-                val resultX = runExe(
-                        exe[i], testData, allInfo = false, prefix = String.format("%-13s", "Solution $i")
-                )
-                val out = resultX.out
-                if (resultX.notSuccess()) {
+                val result = runAndCheck(exe[i], Test(null, testData, answer), checker, allInfo = false, prefix = String.format("%-13s", "Solution $i"))
+                val out = result.invocation?.out
+                if (result.notCorrect()) {
                     testData.copyIfNotNull(this.out.path.test)
                     answer.copyIfNotNull(this.out.path.ans)
-                    out.copyIfNotNull(this.out.path.wrong)
-                    println("Args: $genArgs")
-                    return
-                }
-                if (!checker.checkLive(testData, answer, out, prefix = "Checker      ").isCorrect) {
-                    testData.copyIfNotNull(this.out.path.test)
-                    answer.copyIfNotNull(this.out.path.ans)
-                    out.copyIfNotNull(this.out.path.wrong)
+                    out?.copyIfNotNull(this.out.path.wrong)
                     println("Args: $genArgs")
                     return
                 }
